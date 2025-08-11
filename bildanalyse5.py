@@ -73,23 +73,23 @@ if uploaded_file:
     # --- Interaktive Korrektur ---
     st.subheader("🖱 Manuelle Korrektur")
     from PIL import Image
-from streamlit_drawable_canvas import st_canvas
+    from streamlit_drawable_canvas import st_canvas
 
-# Stelle sicher, dass 'uploaded_file' oder 'image' ein gültiges PIL.Image ist
-image_pil = Image.open(uploaded_file)  # oder dein Bildobjekt
+    # Stelle sicher, dass 'uploaded_file' oder 'image' ein gültiges PIL.Image ist
+    image_pil = Image.open(uploaded_file)  # oder dein Bildobjekt
 
-canvas_result = st_canvas(
-    fill_color="rgba(255, 0, 0, 0.5)",
-    stroke_width=5,
-    stroke_color="#FF0000",
-    background_image=image_pil,  # Direktes PIL-Image statt URL
-    update_streamlit=True,
-    height=image_pil.height,
-    width=image_pil.width,
-    drawing_mode="point",
-    key="canvas",
-)
-
+    canvas_result = st_canvas(
+        fill_color="rgba(255, 0, 0, 0.5)",
+        stroke_width=5,
+        stroke_color="#FF0000",
+        background_image=image_pil,  # Direktes PIL-Image statt URL
+        update_streamlit=True,
+        height=image_pil.height,
+        width=image_pil.width,
+        drawing_mode="point",
+        key="canvas",
+    )
+    
 
     # --- Klicks übernehmen ---
     manual_points = []
