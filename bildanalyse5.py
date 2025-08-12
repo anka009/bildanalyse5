@@ -7,22 +7,22 @@ import numpy as np
 st.set_page_config(page_title="🧪 Interaktiver Lern-Zellkern-Zähler – Stufe 1", layout="wide")
 st.title("🧪 Interaktiver Lern-Zellkern-Zähler – Stufe 1")
 
-# Datei-Upload (nur PNG, JPG, JPEG)
+# Datei-Upload (PNG, JPG, JPEG)
 uploaded_file = st.file_uploader(
     "📁 Bild hochladen", 
     type=["png", "jpg", "jpeg"]
 )
 
 if uploaded_file:
-    # Bild laden und als RGB konvertieren
+    # Bild in RGB konvertieren (verhindert background_image_url-Fehler)
     image = Image.open(uploaded_file).convert("RGB")
     img_array = np.array(image)
 
-    # Beispiel: Dummy-Kernerkennung (hier nur zufällige Punkte)
+    # Dummy-Zellkerne (zufällige Punkte)
     np.random.seed(42)
     points = [(np.random.randint(0, image.width), np.random.randint(0, image.height)) for _ in range(10)]
 
-    # Original anzeigen mit Punkten
+    # Vorschau mit roten Punkten
     preview_img = image.copy()
     draw = ImageDraw.Draw(preview_img)
     for p in points:
@@ -43,7 +43,7 @@ if uploaded_file:
     canvas_add = st_canvas(
         fill_color="rgba(0,255,0,0.6)",
         stroke_width=5,
-        background_image=image,
+        background_image=image,  # Muss PIL.Image im RGB-Format sein
         update_streamlit=True,
         height=image.height,
         width=image.width,
@@ -56,7 +56,7 @@ if uploaded_file:
     canvas_del = st_canvas(
         fill_color="rgba(255,0,0,0.6)",
         stroke_width=5,
-        background_image=image,
+        background_image=image,  # Auch hier RGB
         update_streamlit=True,
         height=image.height,
         width=image.width,
