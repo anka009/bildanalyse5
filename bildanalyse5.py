@@ -1,80 +1,73 @@
 import streamlit as st
-from PIL import Image
-import numpy as np
 from streamlit_drawable_canvas import st_canvas
-import cv2
+from PIL import Image, ImageDraw
+import numpy as np
 
-# Seite konfigurieren
+# Seiteneinstellungen
 st.set_page_config(page_title="🧪 Interaktiver Lern-Zellkern-Zähler – Stufe 1", layout="wide")
 st.title("🧪 Interaktiver Lern-Zellkern-Zähler – Stufe 1")
 
-# Bild hochladen
+# Datei-Upload (nur PNG, JPG, JPEG)
 uploaded_file = st.file_uploader(
-    "📁 Bild hochladen",
-    type=["png", "jpg", "jpeg", "tif", "tiff"]
+    "📁 Bild hochladen", 
+    type=["png", "jpg", "jpeg"]
 )
 
-# Funktion: Zellkerne zählen (Dummy-Beispiel mit OpenCV)
-def detect_nuclei(image: Image.Image):
-    # Graustufen
-    gray = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2GRAY)
-    # Schwelle setzen
-    _, thresh = cv2.threshold(gray, 127, 255, cv2.THRESH_BINARY_INV)
-    # Konturen finden
-    contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    return len(contours)
-
 if uploaded_file:
-    # TIFF richtig öffnen und in RGB konvertieren
-    pil_img = Image.open(uploaded_file)
-    if pil_img.mode not in ("RGB", "RGBA"):
-        pil_img = pil_img.convert("RGB")
+    # Bild laden und als RGB konvertieren
+    image = Image.open(uploaded_file).convert("RGB")
+    img_array = np.array(image)
 
-    st.image(pil_img, caption="Hochgeladenes Bild", use_container_width=True)
+    # Beispiel: Dummy-Kernerkennung (hier nur zufällige Punkte)
+    np.random.seed(42)
+    points = [(np.random.randint(0, image.width), np.random.randint(0, image.height)) for _ in range(10)]
 
-    # Zellkerne zählen
-    nuclei_count = detect_nuclei(pil_img)
-    st.subheader(f"Gefundene Zellkerne: {nuclei_count}")
+    # Original anzeigen mit Punkten
+    preview_img = image.copy()
+    draw = ImageDraw.Draw(preview_img)
+    for p in points:
+        r = 5
+        draw.ellipse((p[0]-r, p[1]-r, p[0]+r, p[1]+r), outline="red", width=2)
+
+    st.image(preview_img, caption=f"Gefundene Zellkerne: {len(points)}", use_container_width=True)
 
     st.markdown("""
-    ### ✏️ Interaktive Korrektur (Grün = Hinzufügen, Rot = Löschen)
+    ✏️ **Interaktive Korrektur** (Grün = Hinzufügen, Rot = Löschen)  
     Klicke in das obere (grün) Canvas, um Punkte hinzuzufügen.  
     Klicke in das untere (rot) Canvas, um Punkte zu markieren, die gelöscht werden sollen.  
     Drücke **Feedback speichern**, wenn du fertig bist.
     """)
 
-    # Canvas: Punkte hinzufügen
-    st.write("#### Punkte hinzufügen (Grün)")
+    # Canvas: Punkte hinzufügen (Grün)
+    st.subheader("Punkte hinzufügen (Grün)")
     canvas_add = st_canvas(
         fill_color="rgba(0,255,0,0.6)",
-        stroke_width=10,
-        stroke_color="green",
-        background_image=pil_img,
+        stroke_width=5,
+        background_image=image,
         update_streamlit=True,
-        height=pil_img.height,
-        width=pil_img.width,
+        height=image.height,
+        width=image.width,
         drawing_mode="point",
         key="canvas_add"
     )
 
-    # Canvas: Punkte löschen
-    st.write("#### Punkte löschen (Rot)")
+    # Canvas: Punkte löschen (Rot)
+    st.subheader("Punkte löschen (Rot)")
     canvas_del = st_canvas(
         fill_color="rgba(255,0,0,0.6)",
-        stroke_width=10,
-        stroke_color="red",
-        background_image=pil_img,
+        stroke_width=5,
+        background_image=image,
         update_streamlit=True,
-        height=pil_img.height,
-        width=pil_img.width,
+        height=image.height,
+        width=image.width,
         drawing_mode="point",
         key="canvas_del"
     )
 
-    # Feedback speichern
-    if st.button("💾 Feedback speichern"):
-        added_points = canvas_add.json_data if canvas_add else None
-        deleted_points = canvas_del.json_data if canvas_del else None
-        st.success("✅ Feedback gespeichert!")
-        st.write("Hinzugefügte Punkte:", added_points)
-        st.write("Gelöschte Punkte:", deleted_points)
+    # Feedback-Button
+    if st.button("✅ Feedback speichern"):
+        add_points = canvas_add.json_data["objects"] if canvas_add and canvas_add.json_data else []
+        del_points = canvas_del.json_data["objects"] if canvas_del and canvas_del.json_data else []
+
+        st.write(f"Hinzugefügte Punkte: {len(add_points)}")
+        st.write(f"Gelöschte Punkte: {len(del_points)}")
